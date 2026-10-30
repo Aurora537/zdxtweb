@@ -2004,11 +2004,14 @@
         ink.style.left = a.offsetLeft + 'px';
         ink.style.width = a.offsetWidth + 'px';
       }
-      links.addEventListener('mouseleave', function () {
-        moveInk(links.querySelector('a.is-on'));
-      });
+      /* 悬停不再移动滑块：仅由 CSS 负责文字轻微放大反馈；
+         点击锚点后立即移动滑块，随后交给滚动联动维护 */
       $$('a', links).forEach(function (a) {
-        a.addEventListener('mouseenter', function () { moveInk(a); });
+        a.addEventListener('click', function () {
+          $$('a', links).forEach(function (x) { x.classList.remove('is-on'); });
+          a.classList.add('is-on');
+          moveInk(a);
+        });
       });
 
       var curSec = null;
