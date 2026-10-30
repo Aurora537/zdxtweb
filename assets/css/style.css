@@ -296,9 +296,11 @@ main, .foot-wrap { position: relative; z-index: 1; }
   font-size: 13.5px;
   font-weight: 600;
   color: var(--cream-text-2);
-  transition: color .24s, background .24s;
+  transition: color .24s, background .24s, transform .2s var(--ease);
+  will-change: transform;
+  transform-origin: center;
 }
-.nav__links a:hover { color: var(--cream-text); }
+.nav__links a:hover { color: var(--cream-text); transform: scale(1.06); }
 .nav__links a.is-on { color: #fff; background: var(--cream-primary); }
 .nav__ink {
   position: absolute;
