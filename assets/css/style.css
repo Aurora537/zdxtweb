@@ -4185,3 +4185,23 @@ main, .foot-wrap { position: relative; z-index: 1; }
   animation: shimmer 1.5s infinite;
 }
 
+/* 下载按钮：选择线路 / 启动下载期间的加载态 */
+.dl-busy {
+  pointer-events: none;
+  opacity: .85;
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+}
+.dl-spin {
+  width: 1em;
+  height: 1em;
+  border: .12em solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: dl-spin .7s linear infinite;
+}
+@keyframes dl-spin {
+  to { transform: rotate(360deg); }
+}
+

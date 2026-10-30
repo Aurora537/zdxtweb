@@ -731,9 +731,26 @@
         best(a.getAttribute('href'));  // 预探测，点击时通常已就绪
         a.addEventListener('click', function (e) {
           var direct = a.getAttribute('href');
-          if (!direct) return;
+          if (!direct || a.dataset.dlBusy === '1') return;
           e.preventDefault();
-          best(direct).then(function (url) { window.location.href = url; });
+          var html = a.innerHTML;
+          var setState = function (text) {
+            a.innerHTML = '<i class="dl-spin"></i><span>' + text + '</span>';
+          };
+          a.dataset.dlBusy = '1';
+          a.classList.add('dl-busy');
+          a.setAttribute('aria-busy', 'true');
+          setState('正在选择最快线路…');
+          best(direct).then(function (url) {
+            setState('正在启动下载…');
+            window.location.href = url;
+            setTimeout(function () {          // 下载任务已抛出后恢复原样
+              a.innerHTML = html;
+              a.classList.remove('dl-busy');
+              a.removeAttribute('aria-busy');
+              delete a.dataset.dlBusy;
+            }, 1500);
+          });
         }, true);
       })(links[i]);
     }
