@@ -1,0 +1,18 @@
+# 系统与编辑器临时文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器/IDE
+.idea/
+.vscode/
+*.swp
+
+# 安装包与产物：体积大，走 Release 资源分发，不入库
+*.apk
+*.aab
+*.ipa
+
+# 本地预览产生的缓存
+.cache/
+*.log
