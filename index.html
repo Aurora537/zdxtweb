@@ -703,21 +703,25 @@
     });
   }
 
-  function best(direct) {
-    if (cache[direct] !== undefined) return Promise.resolve(cache[direct]);
-    var list = [direct].concat(MIRRORS.map(function (m) { return m + direct; }));
+  function pick(direct) {
     return new Promise(function (resolve) {
+      var list = [direct].concat(MIRRORS.map(function (m) { return m + direct; }));
       var done = false;
-      var pick = function (u) {
+      var settle = function (u) {
         if (done) return;
         done = true;
-        resolve(cache[direct] = u);
+        resolve(u);
       };
       list.forEach(function (u) {
-        probe(u, 3500).then(function (r) { if (r) pick(r.url); });
+        probe(u, 3500).then(function (r) { if (r) settle(r.url); });
       });
-      setTimeout(function () { pick(direct); }, 4000);
+      setTimeout(function () { settle(direct); }, 4000);
     });
+  }
+
+  function best(direct) {
+    if (!cache[direct]) cache[direct] = pick(direct);   // 同一地址只探测一次
+    return cache[direct];
   }
 
   function init() {
