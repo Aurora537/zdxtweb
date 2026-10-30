@@ -667,5 +667,77 @@
 
 <script src="assets/js/data.js"></script>
 <script src="assets/js/app.js"></script>
+<script>
+/* 下载线路自动择优：页面加载后后台对「GitHub 直连 + 公共加速」做响应测速，
+   点击下载按钮时直接跳到当前最快的一条；4 秒内都没有结果则回落 GitHub 直连。
+   按钮 href 本身仍是 GitHub 直链，作为无 JS 时的兜底。 */
+(function () {
+  var MIRRORS = [
+    'https://gh-proxy.com/',
+    'https://gh-proxy.org/',
+    'https://hk.gh-proxy.com/'
+  ];
+  var cache = {};
+
+  function probe(url, timeout) {
+    return new Promise(function (resolve) {
+      var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+      var t0 = Date.now();
+      var timer = setTimeout(function () {
+        if (ctl) ctl.abort();
+        resolve(null);
+      }, timeout);
+      fetch(url, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: ctl ? ctl.signal : undefined
+      }).then(function () {
+        clearTimeout(timer);
+        if (ctl) ctl.abort();
+        resolve({ url: url, ms: Date.now() - t0 });
+      }).catch(function () {
+        clearTimeout(timer);
+        resolve(null);
+      });
+    });
+  }
+
+  function best(direct) {
+    if (cache[direct] !== undefined) return Promise.resolve(cache[direct]);
+    var list = [direct].concat(MIRRORS.map(function (m) { return m + direct; }));
+    return new Promise(function (resolve) {
+      var done = false;
+      var pick = function (u) {
+        if (done) return;
+        done = true;
+        resolve(cache[direct] = u);
+      };
+      list.forEach(function (u) {
+        probe(u, 3500).then(function (r) { if (r) pick(r.url); });
+      });
+      setTimeout(function () { pick(direct); }, 4000);
+    });
+  }
+
+  function init() {
+    var links = document.querySelectorAll('a[href*="releases/latest/download/"]');
+    for (var i = 0; i < links.length; i++) {
+      (function (a) {
+        best(a.getAttribute('href'));  // 预探测，点击时通常已就绪
+        a.addEventListener('click', function (e) {
+          var direct = a.getAttribute('href');
+          if (!direct) return;
+          e.preventDefault();
+          best(direct).then(function (url) { window.location.href = url; });
+        }, true);
+      })(links[i]);
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
 </body>
 </html>
